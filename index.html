@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Road Show – VIP Invitation</title>
+<meta name="description" content="Create your personalised Road Show VIP invitation as a PDF.">
+<meta property="og:title" content="Road Show – VIP Invitation">
+<meta property="og:description" content="Create your personalised invitation and download it as a PDF.">
+<meta property="og:image" content="https://orwaaah.github.io/invitation-/assets/template.jpg">
+<meta property="og:type" content="website">
+<style>
+  @font-face { font-family: "Cairo"; font-weight: 700; font-display: swap;
+    src: url(assets/cairo-arabic-700-normal.woff2) format("woff2");
+    unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC; }
+  @font-face { font-family: "Cairo"; font-weight: 700; font-display: swap;
+    src: url(assets/cairo-latin-ext-700-normal.woff2) format("woff2");
+    unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+  @font-face { font-family: "Cairo"; font-weight: 700; font-display: swap;
+    src: url(assets/cairo-latin-700-normal.woff2) format("woff2");
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+
+  :root {
+    --bg: #020a1c;
+    --panel: #0a1730;
+    --line: #1f3358;
+    --text: #eaf2ff;
+    --muted: #8fa6c8;
+    --accent: #4fb6ff;
+    --accent-ink: #001226;
+    --error: #ff8a8a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: radial-gradient(120% 80% at 80% 0%, #0b2d5c 0%, var(--bg) 55%) fixed, var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 980px; margin: 0 auto; padding: 28px 16px 48px;
+    display: grid; gap: 28px; grid-template-columns: 1fr;
+  }
+  @media (min-width: 820px) {
+    .wrap { grid-template-columns: 380px 1fr; align-items: start; padding-top: 48px; }
+    .preview { position: sticky; top: 24px; }
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: .2px; }
+  .sub { color: var(--muted); margin: 0 0 22px; }
+  .sub span { display: block; direction: rtl; }
+  form { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  .field { margin-bottom: 18px; }
+  label.lbl { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; margin-bottom: 6px; }
+  label.lbl .ar { direction: rtl; color: var(--muted); font-weight: 500; }
+  input[type=text] {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line);
+    background: #050f22; color: var(--text); font-size: 16px; outline: none;
+  }
+  input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,182,255,.18); }
+  .photo-pick {
+    display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 10px;
+    border: 1px dashed var(--line); background: #050f22; cursor: pointer;
+  }
+  .photo-pick:hover, .photo-pick:focus-within { border-color: var(--accent); }
+  .thumb {
+    width: 52px; height: 52px; border-radius: 50%; flex: none; background: #13284a center/cover no-repeat;
+    border: 2px solid #2a4572; display: grid; place-items: center; color: var(--muted);
+  }
+  .thumb svg { width: 22px; height: 22px; }
+  .photo-pick .hint { color: var(--muted); font-size: 14px; }
+  .photo-pick input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .err { color: var(--error); font-size: 13px; margin-top: 6px; min-height: 0; }
+  .err:empty { display: none; }
+  .btn {
+    width: 100%; padding: 14px 16px; border: 0; border-radius: 12px; cursor: pointer;
+    font-size: 16px; font-weight: 700; background: var(--accent); color: var(--accent-ink);
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+  }
+  .btn:disabled { opacity: .6; cursor: progress; }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); margin-top: 10px; }
+  .btn .ar { direction: rtl; font-weight: 600; opacity: .85; }
+  .done { margin-top: 14px; color: #9fe3b5; font-size: 14px; text-align: center; }
+  .done:empty { display: none; }
+  .preview canvas {
+    width: 100%; height: auto; display: block; border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.55); background: #000;
+  }
+  .preview p { color: var(--muted); font-size: 13px; text-align: center; margin: 10px 0 0; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section>
+    <h1>Road Show · VIP Invitation</h1>
+    <p class="sub">Fill in the details and download your invitation as a PDF.
+      <span>عبّي المعلومات ونزّل الدعوة PDF جاهزة.</span></p>
+
+    <form id="form" novalidate>
+      <div class="field">
+        <label class="lbl" for="guest"><span>Guest name</span><span class="ar">اسم المدعو</span></label>
+        <input id="guest" type="text" autocomplete="off" maxlength="40" placeholder="e.g. Mohammad Khaled">
+        <div class="err" id="guest-err"></div>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="host"><span>Your name</span><span class="ar">اسم الداعي</span></label>
+        <input id="host" type="text" autocomplete="name" maxlength="40" placeholder="e.g. Nisren Mohmad">
+        <div class="err" id="host-err"></div>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="photo"><span>Your photo</span><span class="ar">صورة الداعي</span></label>
+        <label class="photo-pick">
+          <span class="thumb" id="thumb" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg>
+          </span>
+          <span class="hint" id="photo-hint">Tap to choose a photo · اختر صورة</span>
+          <input id="photo" type="file" accept="image/*">
+        </label>
+        <div class="err" id="photo-err"></div>
+      </div>
+
+      <button class="btn" id="make" type="submit">Download PDF · <span class="ar">موافق</span></button>
+      <button class="btn ghost" id="share" type="button" hidden>Share PDF · <span class="ar">مشاركة</span></button>
+      <div class="done" id="done"></div>
+    </form>
+  </section>
+
+  <section class="preview" aria-label="Invitation preview">
+    <canvas id="preview" width="905" height="1280"></canvas>
+    <p>Live preview · معاينة</p>
+  </section>
+</main>
+
+<script src="assets/jspdf.umd.min.js"></script>
+<script>
+(() => {
+  // All positions are in the template's own pixel space (905 × 1280).
+  // A higher-resolution template with the same proportions can replace assets/template.jpg as-is.
+  const L = {
+    w: 905, h: 1280,
+    guest: { cx: 452.5, baseline: 813, cap: 38, maxW: 430 },   // centred under "Dear"
+    host:  { x: 373, baseline: 1172, cap: 17, maxW: 165 },     // left-aligned, right of the photo
+    photo: { cx: 349.5, cy: 1161.5, r: 15.9, ring: 16.4 },     // covers the white circle
+  };
+  const FONT = '"Cairo", system-ui, sans-serif';
+  const PREVIEW_SCALE = 2;
+  const EXPORT_SCALE = 2.5;   // 2263 × 3200 px, matches the 1414 × 2000 template comfortably
+
+  const $ = (id) => document.getElementById(id);
+  const guestIn = $('guest'), hostIn = $('host'), photoIn = $('photo');
+  const preview = $('preview'), makeBtn = $('make'), shareBtn = $('share'), doneEl = $('done');
+
+  let template = null, photo = null, lastFile = null;
+
+  const loadImage = (src) => new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = src;
+  });
+
+  const isRTL = (s) => /[֐-ࣿיִ-﷿ﹰ-﻿]/.test(s);
+
+  // Font size whose capital-letter height matches the design, shrunk to fit maxW.
+  function fitFont(ctx, text, cap, maxW) {
+    ctx.font = `700 100px ${FONT}`;
+    const capH = ctx.measureText('H').actualBoundingBoxAscent || 72;
+    let size = cap * 100 / capH;
+    ctx.font = `700 ${size}px ${FONT}`;
+    const w = ctx.measureText(text).width;
+    if (w > maxW) size *= maxW / w;
+    return size;
+  }
+
+  function drawText(ctx, text, spec, align) {
+    if (!text) return;
+    ctx.save();
+    ctx.direction = isRTL(text) ? 'rtl' : 'ltr';
+    ctx.textAlign = align;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#ffffff';
+    // Arabic glyphs read larger than Latin at the same size, so tone them down a little.
+    const size = fitFont(ctx, text, spec.cap, spec.maxW) * (isRTL(text) ? 0.88 : 1);
+    ctx.font = `700 ${size}px ${FONT}`;
+    ctx.fillText(text, align === 'center' ? spec.cx : spec.x, spec.baseline);
+    ctx.restore();
+  }
+
+  function drawPhoto(ctx, img) {
+    if (!img) return;
+    const { cx, cy, r, ring } = L.photo;
+    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    const s = Math.min(iw, ih);
+    const sx = (iw - s) / 2;
+    const sy = ih > iw ? (ih - s) * 0.3 : (ih - s) / 2;   // portraits: keep the face, which sits high
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(img, sx, sy, s, s, cx - r, cy - r, r * 2, r * 2);
+    ctx.restore();
+    ctx.beginPath();
+    ctx.arc(cx, cy, ring, 0, Math.PI * 2);
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(176,188,206,0.95)';
+    ctx.stroke();
+  }
+
+  function render(canvas, scale) {
+    canvas.width = Math.round(L.w * scale);
+    canvas.height = Math.round(L.h * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    if (template) ctx.drawImage(template, 0, 0, L.w, L.h);
+    drawText(ctx, guestIn.value.trim(), L.guest, 'center');
+    drawText(ctx, hostIn.value.trim(), L.host, 'left');
+    drawPhoto(ctx, photo);
+    return canvas;
+  }
+
+  async function ensureFonts() {
+    const sample = 'H ' + guestIn.value + ' ' + hostIn.value;
+    try { await document.fonts.load(`700 40px ${FONT}`, sample); } catch (e) {}
+  }
+
+  let pending = 0;
+  async function refresh() {
+    const ticket = ++pending;
+    await ensureFonts();
+    if (ticket === pending) render(preview, PREVIEW_SCALE);
+  }
+
+  function setErr(id, msg) { $(id).textContent = msg || ''; }
+
+  function validate() {
+    let ok = true;
+    if (!guestIn.value.trim()) { setErr('guest-err', 'Please enter the guest name · اكتب اسم المدعو'); ok = false; } else setErr('guest-err');
+    if (!hostIn.value.trim())  { setErr('host-err', 'Please enter your name · اكتب اسمك'); ok = false; } else setErr('host-err');
+    if (!photo)                { setErr('photo-err', 'Please choose your photo · اختر صورتك'); ok = false; } else setErr('photo-err');
+    return ok;
+  }
+
+  function fileName() {
+    // Latin-only file name: some phones mangle non-Latin download names.
+    const g = guestIn.value.trim().replace(/[^A-Za-z0-9 ._-]+/g, '').trim().replace(/\s+/g, '-');
+    return `RoadShow-Invitation-${g || 'Guest'}.pdf`;
+  }
+
+  async function buildPdf() {
+    await ensureFonts();
+    const canvas = render(document.createElement('canvas'), EXPORT_SCALE);
+    const { jsPDF } = window.jspdf;
+    const W = 595.28, H = W * L.h / L.w;       // A4 width, design proportions
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [W, H], compress: true });
+    doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, W, H, undefined, 'FAST');
+    doc.setProperties({ title: 'Road Show – VIP Invitation' });
+    return doc;
+  }
+
+  guestIn.addEventListener('input', () => { setErr('guest-err'); refresh(); });
+  hostIn.addEventListener('input', () => { setErr('host-err'); refresh(); });
+
+  photoIn.addEventListener('change', async () => {
+    const f = photoIn.files && photoIn.files[0];
+    if (!f) return;
+    if (!f.type.startsWith('image/')) { setErr('photo-err', 'Please choose an image file · اختر ملف صورة'); return; }
+    const url = URL.createObjectURL(f);
+    try {
+      photo = await loadImage(url);
+      $('thumb').style.backgroundImage = `url("${url}")`;
+      $('thumb').innerHTML = '';
+      $('photo-hint').textContent = 'Change photo · تغيير الصورة';
+      setErr('photo-err');
+      refresh();
+    } catch (e) {
+      setErr('photo-err', "This photo couldn't be opened, try another one · جرّب صورة ثانية");
+    }
+  });
+
+  $('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    doneEl.textContent = '';
+    if (!validate()) return;
+    makeBtn.disabled = true;
+    try {
+      const doc = await buildPdf();
+      const name = fileName();
+      doc.save(name);
+      lastFile = new File([doc.output('blob')], name, { type: 'application/pdf' });
+      shareBtn.hidden = !(navigator.canShare && navigator.canShare({ files: [lastFile] }));
+      doneEl.textContent = 'Your invitation is ready ✓ · الدعوة جاهزة';
+    } catch (err) {
+      doneEl.textContent = '';
+      setErr('photo-err', 'Something went wrong, please try again · صار خطأ، جرّب مرة ثانية');
+    } finally {
+      makeBtn.disabled = false;
+    }
+  });
+
+  shareBtn.addEventListener('click', async () => {
+    if (!lastFile) return;
+    try { await navigator.share({ files: [lastFile], title: 'Road Show – VIP Invitation' }); } catch (e) {}
+  });
+
+  loadImage('assets/template.jpg').then((img) => { template = img; refresh(); });
+})();
+</script>
+</body>
+</html>
