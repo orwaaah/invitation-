@@ -48,11 +48,9 @@
   }
   h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: .2px; }
   .sub { color: var(--muted); margin: 0 0 22px; }
-  .sub span { display: block; direction: rtl; }
   form { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
   .field { margin-bottom: 18px; }
-  label.lbl { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; margin-bottom: 6px; }
-  label.lbl .ar { direction: rtl; color: var(--muted); font-weight: 500; }
+  label.lbl { display: block; font-weight: 600; margin-bottom: 6px; }
   input[type=text] {
     width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line);
     background: #050f22; color: var(--text); font-size: 16px; outline: none;
@@ -79,7 +77,6 @@
   }
   .btn:disabled { opacity: .6; cursor: progress; }
   .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); margin-top: 10px; }
-  .btn .ar { direction: rtl; font-weight: 600; opacity: .85; }
   .done { margin-top: 14px; color: #9fe3b5; font-size: 14px; text-align: center; }
   .done:empty { display: none; }
   .preview canvas {
@@ -93,43 +90,42 @@
 <main class="wrap">
   <section>
     <h1>Road Show · VIP Invitation</h1>
-    <p class="sub">Fill in the details and download your invitation as a PDF.
-      <span>عبّي المعلومات ونزّل الدعوة PDF جاهزة.</span></p>
+    <p class="sub">Fill in the details and download your invitation as a PDF.</p>
 
     <form id="form" novalidate>
       <div class="field">
-        <label class="lbl" for="guest"><span>Guest name</span><span class="ar">اسم المدعو</span></label>
+        <label class="lbl" for="guest">Guest name</label>
         <input id="guest" type="text" autocomplete="off" maxlength="40" placeholder="e.g. Mohammad Khaled">
         <div class="err" id="guest-err"></div>
       </div>
 
       <div class="field">
-        <label class="lbl" for="host"><span>Your name</span><span class="ar">اسم الداعي</span></label>
+        <label class="lbl" for="host">Your name</label>
         <input id="host" type="text" autocomplete="name" maxlength="40" placeholder="e.g. Nisren Mohmad">
         <div class="err" id="host-err"></div>
       </div>
 
       <div class="field">
-        <label class="lbl" for="photo"><span>Your photo</span><span class="ar">صورة الداعي</span></label>
+        <label class="lbl" for="photo">Your photo</label>
         <label class="photo-pick">
           <span class="thumb" id="thumb" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg>
           </span>
-          <span class="hint" id="photo-hint">Tap to choose a photo · اختر صورة</span>
+          <span class="hint" id="photo-hint">Tap to choose a photo</span>
           <input id="photo" type="file" accept="image/*">
         </label>
         <div class="err" id="photo-err"></div>
       </div>
 
-      <button class="btn" id="make" type="submit">Download PDF · <span class="ar">موافق</span></button>
-      <button class="btn ghost" id="share" type="button" hidden>Share PDF · <span class="ar">مشاركة</span></button>
+      <button class="btn" id="make" type="submit">Download PDF</button>
+      <button class="btn ghost" id="share" type="button" hidden>Share PDF</button>
       <div class="done" id="done"></div>
     </form>
   </section>
 
   <section class="preview" aria-label="Invitation preview">
     <canvas id="preview" width="905" height="1280"></canvas>
-    <p>Live preview · معاينة</p>
+    <p>Live preview</p>
   </section>
 </main>
 
@@ -238,9 +234,9 @@
 
   function validate() {
     let ok = true;
-    if (!guestIn.value.trim()) { setErr('guest-err', 'Please enter the guest name · اكتب اسم المدعو'); ok = false; } else setErr('guest-err');
-    if (!hostIn.value.trim())  { setErr('host-err', 'Please enter your name · اكتب اسمك'); ok = false; } else setErr('host-err');
-    if (!photo)                { setErr('photo-err', 'Please choose your photo · اختر صورتك'); ok = false; } else setErr('photo-err');
+    if (!guestIn.value.trim()) { setErr('guest-err', 'Please enter the guest name'); ok = false; } else setErr('guest-err');
+    if (!hostIn.value.trim())  { setErr('host-err', 'Please enter your name'); ok = false; } else setErr('host-err');
+    if (!photo)                { setErr('photo-err', 'Please choose your photo'); ok = false; } else setErr('photo-err');
     return ok;
   }
 
@@ -267,17 +263,17 @@
   photoIn.addEventListener('change', async () => {
     const f = photoIn.files && photoIn.files[0];
     if (!f) return;
-    if (!f.type.startsWith('image/')) { setErr('photo-err', 'Please choose an image file · اختر ملف صورة'); return; }
+    if (!f.type.startsWith('image/')) { setErr('photo-err', 'Please choose an image file'); return; }
     const url = URL.createObjectURL(f);
     try {
       photo = await loadImage(url);
       $('thumb').style.backgroundImage = `url("${url}")`;
       $('thumb').innerHTML = '';
-      $('photo-hint').textContent = 'Change photo · تغيير الصورة';
+      $('photo-hint').textContent = 'Change photo';
       setErr('photo-err');
       refresh();
     } catch (e) {
-      setErr('photo-err', "This photo couldn't be opened, try another one · جرّب صورة ثانية");
+      setErr('photo-err', "This photo couldn't be opened, please try another one");
     }
   });
 
@@ -292,10 +288,10 @@
       doc.save(name);
       lastFile = new File([doc.output('blob')], name, { type: 'application/pdf' });
       shareBtn.hidden = !(navigator.canShare && navigator.canShare({ files: [lastFile] }));
-      doneEl.textContent = 'Your invitation is ready ✓ · الدعوة جاهزة';
+      doneEl.textContent = 'Your invitation is ready ✓';
     } catch (err) {
       doneEl.textContent = '';
-      setErr('photo-err', 'Something went wrong, please try again · صار خطأ، جرّب مرة ثانية');
+      setErr('photo-err', 'Something went wrong, please try again');
     } finally {
       makeBtn.disabled = false;
     }
