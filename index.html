@@ -82,6 +82,9 @@
   .ready .btn.ghost { margin-top: 0; }
   .done { color: #9fe3b5; font-size: 14px; text-align: center; }
   .btn.secondary { background: #13284a; color: var(--text); }
+  .hint-ios { margin: 0; color: var(--muted); font-size: 13px; text-align: center; }
+  .hint-ios svg { width: 15px; height: 15px; vertical-align: -2px; color: var(--text); }
+  .hint-ios b { color: var(--text); }
   .preview canvas {
     width: 100%; height: auto; display: block; border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0,0,0,.55); background: #000;
@@ -126,6 +129,9 @@
         <div class="done">Your invitation is ready ✓</div>
         <button class="btn" id="share" type="button" hidden>Share / Save PDF</button>
         <button class="btn" id="download" type="button">Download PDF</button>
+        <p class="hint-ios" id="ios-hint" hidden>If the invitation opens on screen, tap the Share icon
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Share"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+          and choose <b>Save to Files</b>.</p>
         <button class="btn ghost" id="another" type="button">Create another invitation</button>
       </div>
     </form>
@@ -158,6 +164,7 @@
   const guestIn = $('guest'), hostIn = $('host'), photoIn = $('photo');
   const preview = $('preview'), makeBtn = $('make');
   const readyEl = $('ready'), shareBtn = $('share'), downloadBtn = $('download'), anotherBtn = $('another');
+  const iosHint = $('ios-hint');
 
   let template = null, photo = null, ready = null, busy = false;
   const exportCanvas = document.createElement('canvas');
@@ -347,10 +354,14 @@
     try {
       clearReady();
       ready = await buildPdf();
-      shareBtn.hidden = !canShareFile(ready.file);
-      // On iPhone the share sheet is the dependable way to save or send, so it leads there.
-      downloadBtn.classList.toggle('secondary', !shareBtn.hidden && IS_IOS);
+      const canShare = canShareFile(ready.file);
+      shareBtn.hidden = !canShare;
+      shareBtn.textContent = IS_IOS ? 'Save / Send PDF' : 'Share PDF';
       shareBtn.classList.toggle('secondary', !IS_IOS);
+      // On iPhone "Download" only opens the PDF on screen; the share sheet is what saves it
+      // (Save to Files) or sends it (WhatsApp), so it is the only button there.
+      downloadBtn.hidden = IS_IOS && canShare;
+      iosHint.hidden = !(IS_IOS && !canShare);
       readyEl.hidden = false;
       makeBtn.hidden = true;
       if (!IS_IOS) downloadReady();      // one tap on Android and desktop
@@ -368,7 +379,13 @@
 
   shareBtn.addEventListener('click', async () => {
     if (!ready) return;
-    try { await navigator.share({ files: [ready.file] }); } catch (e) { /* closed the share sheet */ }
+    try {
+      await navigator.share({ files: [ready.file] });
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;   // closed the share sheet
+      downloadReady();                            // sharing not allowed here: fall back to a download
+      if (IS_IOS) iosHint.hidden = false;
+    }
   });
 
   anotherBtn.addEventListener('click', () => {
