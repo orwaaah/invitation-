@@ -77,8 +77,11 @@
   }
   .btn:disabled { opacity: .6; cursor: progress; }
   .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); margin-top: 10px; }
-  .done { margin-top: 14px; color: #9fe3b5; font-size: 14px; text-align: center; }
-  .done:empty { display: none; }
+  .ready { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+  [hidden] { display: none !important; }
+  .ready .btn.ghost { margin-top: 0; }
+  .done { color: #9fe3b5; font-size: 14px; text-align: center; }
+  .btn.secondary { background: #13284a; color: var(--text); }
   .preview canvas {
     width: 100%; height: auto; display: block; border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0,0,0,.55); background: #000;
@@ -117,9 +120,14 @@
         <div class="err" id="photo-err"></div>
       </div>
 
-      <button class="btn" id="make" type="submit">Download PDF</button>
-      <button class="btn ghost" id="share" type="button" hidden>Share PDF</button>
-      <div class="done" id="done"></div>
+      <button class="btn" id="make" type="submit">Create invitation</button>
+
+      <div class="ready" id="ready" hidden>
+        <div class="done">Your invitation is ready ✓</div>
+        <button class="btn" id="share" type="button" hidden>Share / Save PDF</button>
+        <button class="btn" id="download" type="button">Download PDF</button>
+        <button class="btn ghost" id="another" type="button">Create another invitation</button>
+      </div>
     </form>
   </section>
 
@@ -141,14 +149,18 @@
     photo: { cx: 349.5, cy: 1161.5, r: 15.9, ring: 16.4 },     // covers the white circle
   };
   const FONT = '"Cairo", system-ui, sans-serif';
-  const PREVIEW_SCALE = 2;
   const EXPORT_SCALE = 2.5;   // 2263 × 3200 px, matches the 1414 × 2000 template comfortably
+  const PHOTO_PX = 400;       // the uploaded photo is cropped and shrunk once to this square
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   const $ = (id) => document.getElementById(id);
   const guestIn = $('guest'), hostIn = $('host'), photoIn = $('photo');
-  const preview = $('preview'), makeBtn = $('make'), shareBtn = $('share'), doneEl = $('done');
+  const preview = $('preview'), makeBtn = $('make');
+  const readyEl = $('ready'), shareBtn = $('share'), downloadBtn = $('download'), anotherBtn = $('another');
 
-  let template = null, photo = null, lastFile = null;
+  let template = null, photo = null, ready = null, busy = false;
+  const exportCanvas = document.createElement('canvas');
 
   const loadImage = (src) => new Promise((res, rej) => {
     const img = new Image();
@@ -184,18 +196,14 @@
     ctx.restore();
   }
 
-  function drawPhoto(ctx, img) {
-    if (!img) return;
+  function drawPhoto(ctx) {
+    if (!photo) return;
     const { cx, cy, r, ring } = L.photo;
-    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
-    const s = Math.min(iw, ih);
-    const sx = (iw - s) / 2;
-    const sy = ih > iw ? (ih - s) * 0.3 : (ih - s) / 2;   // portraits: keep the face, which sits high
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
-    ctx.drawImage(img, sx, sy, s, s, cx - r, cy - r, r * 2, r * 2);
+    ctx.drawImage(photo, cx - r, cy - r, r * 2, r * 2);
     ctx.restore();
     ctx.beginPath();
     ctx.arc(cx, cy, ring, 0, Math.PI * 2);
@@ -214,8 +222,14 @@
     if (template) ctx.drawImage(template, 0, 0, L.w, L.h);
     drawText(ctx, guestIn.value.trim(), L.guest, 'center');
     drawText(ctx, hostIn.value.trim(), L.host, 'left');
-    drawPhoto(ctx, photo);
+    drawPhoto(ctx);
     return canvas;
+  }
+
+  // Preview only needs to be as sharp as the screen shows it; keeps phone memory low.
+  function previewScale() {
+    const px = (preview.clientWidth || 450) * (window.devicePixelRatio || 1);
+    return Math.max(1, Math.min(2, px / L.w));
   }
 
   async function ensureFonts() {
@@ -227,7 +241,7 @@
   async function refresh() {
     const ticket = ++pending;
     await ensureFonts();
-    if (ticket === pending) render(preview, PREVIEW_SCALE);
+    if (ticket === pending) render(preview, previewScale());
   }
 
   function setErr(id, msg) { $(id).textContent = msg || ''; }
@@ -240,66 +254,136 @@
     return ok;
   }
 
+  // A new name every time, so a download never replaces an earlier invitation.
   function fileName() {
-    // Latin-only file name: some phones mangle non-Latin download names.
     const g = guestIn.value.trim().replace(/[^A-Za-z0-9 ._-]+/g, '').trim().replace(/\s+/g, '-');
-    return `RoadShow-Invitation-${g || 'Guest'}.pdf`;
+    const stamp = Date.now().toString(36).slice(-6).toUpperCase();
+    return `RoadShow-Invitation-${g ? g + '-' : ''}${stamp}.pdf`;
   }
 
   async function buildPdf() {
     await ensureFonts();
-    const canvas = render(document.createElement('canvas'), EXPORT_SCALE);
+    render(exportCanvas, EXPORT_SCALE);
+    const jpeg = exportCanvas.toDataURL('image/jpeg', 0.92);
+    exportCanvas.width = exportCanvas.height = 0;            // free the memory straight away (iOS)
     const { jsPDF } = window.jspdf;
-    const W = 595.28, H = W * L.h / L.w;       // A4 width, design proportions
+    const W = 595.28, H = W * L.h / L.w;                      // A4 width, design proportions
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [W, H], compress: true });
-    doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, W, H, undefined, 'FAST');
+    doc.addImage(jpeg, 'JPEG', 0, 0, W, H, undefined, 'FAST');
     doc.setProperties({ title: 'Road Show – VIP Invitation' });
-    return doc;
+    const name = fileName();
+    const blob = doc.output('blob');
+    return { name, blob, url: URL.createObjectURL(blob), file: new File([blob], name, { type: 'application/pdf' }) };
   }
 
-  guestIn.addEventListener('input', () => { setErr('guest-err'); refresh(); });
-  hostIn.addEventListener('input', () => { setErr('host-err'); refresh(); });
+  // Must run inside the tap itself, so the browser treats it as the user's own download.
+  function downloadReady() {
+    if (!ready) return;
+    const a = document.createElement('a');
+    a.href = ready.url;
+    a.download = fileName();         // fresh name on every tap, even for the same invitation
+    a.rel = 'noopener';
+    if (IS_IOS) a.target = '_blank';   // if a browser ignores "download", open a new tab instead of replacing this page
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  const canShareFile = (f) => {
+    try { return !!(navigator.canShare && navigator.canShare({ files: [f] })); } catch (e) { return false; }
+  };
+
+  // Any change means the prepared PDF no longer matches the form.
+  function clearReady() {
+    if (ready) URL.revokeObjectURL(ready.url);
+    ready = null;
+    readyEl.hidden = true;
+    makeBtn.hidden = false;
+  }
+
+  function onEdit(errId) {
+    setErr(errId);
+    clearReady();
+    refresh();
+  }
+
+  guestIn.addEventListener('input', () => onEdit('guest-err'));
+  hostIn.addEventListener('input', () => onEdit('host-err'));
 
   photoIn.addEventListener('change', async () => {
     const f = photoIn.files && photoIn.files[0];
+    photoIn.value = '';                // lets the same photo be picked again later
     if (!f) return;
-    if (!f.type.startsWith('image/')) { setErr('photo-err', 'Please choose an image file'); return; }
+    if (f.type && !f.type.startsWith('image/')) { setErr('photo-err', 'Please choose an image file'); return; }
     const url = URL.createObjectURL(f);
     try {
-      photo = await loadImage(url);
-      $('thumb').style.backgroundImage = `url("${url}")`;
+      const img = await loadImage(url);
+      // Crop to a square once (portraits keep the face, which sits high) and drop the full-size original.
+      const iw = img.naturalWidth, ih = img.naturalHeight, s = Math.min(iw, ih);
+      const sx = (iw - s) / 2, sy = ih > iw ? (ih - s) * 0.3 : (ih - s) / 2;
+      const c = document.createElement('canvas');
+      c.width = c.height = Math.min(PHOTO_PX, s);
+      const cx = c.getContext('2d');
+      cx.imageSmoothingQuality = 'high';
+      cx.drawImage(img, sx, sy, s, s, 0, 0, c.width, c.height);
+      photo = c;
+      $('thumb').style.backgroundImage = `url("${c.toDataURL('image/jpeg', 0.85)}")`;
       $('thumb').innerHTML = '';
       $('photo-hint').textContent = 'Change photo';
-      setErr('photo-err');
-      refresh();
+      onEdit('photo-err');
     } catch (e) {
       setErr('photo-err', "This photo couldn't be opened, please try another one");
+    } finally {
+      URL.revokeObjectURL(url);
     }
   });
 
   $('form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    doneEl.textContent = '';
-    if (!validate()) return;
+    if (busy || !validate()) return;
+    busy = true;
     makeBtn.disabled = true;
+    makeBtn.textContent = 'Creating…';
     try {
-      const doc = await buildPdf();
-      const name = fileName();
-      doc.save(name);
-      lastFile = new File([doc.output('blob')], name, { type: 'application/pdf' });
-      shareBtn.hidden = !(navigator.canShare && navigator.canShare({ files: [lastFile] }));
-      doneEl.textContent = 'Your invitation is ready ✓';
+      clearReady();
+      ready = await buildPdf();
+      shareBtn.hidden = !canShareFile(ready.file);
+      // On iPhone the share sheet is the dependable way to save or send, so it leads there.
+      downloadBtn.classList.toggle('secondary', !shareBtn.hidden && IS_IOS);
+      shareBtn.classList.toggle('secondary', !IS_IOS);
+      readyEl.hidden = false;
+      makeBtn.hidden = true;
+      if (!IS_IOS) downloadReady();      // one tap on Android and desktop
+      readyEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (err) {
-      doneEl.textContent = '';
       setErr('photo-err', 'Something went wrong, please try again');
     } finally {
+      busy = false;
       makeBtn.disabled = false;
+      makeBtn.textContent = 'Create invitation';
     }
   });
 
+  downloadBtn.addEventListener('click', downloadReady);
+
   shareBtn.addEventListener('click', async () => {
-    if (!lastFile) return;
-    try { await navigator.share({ files: [lastFile], title: 'Road Show – VIP Invitation' }); } catch (e) {}
+    if (!ready) return;
+    try { await navigator.share({ files: [ready.file] }); } catch (e) { /* closed the share sheet */ }
+  });
+
+  anotherBtn.addEventListener('click', () => {
+    guestIn.value = '';
+    onEdit('guest-err');
+    guestIn.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    guestIn.focus({ preventScroll: true });
+  });
+
+  // Coming back to the page (e.g. after viewing the PDF) must leave everything usable.
+  window.addEventListener('pageshow', () => {
+    busy = false;
+    makeBtn.disabled = false;
+    makeBtn.textContent = 'Create invitation';
+    refresh();
   });
 
   loadImage('assets/template.jpg').then((img) => { template = img; refresh(); });
