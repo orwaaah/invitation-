@@ -45,6 +45,7 @@
   @media (min-width: 820px) {
     .wrap { grid-template-columns: 380px 1fr; align-items: start; padding-top: 48px; }
     .preview { position: sticky; top: 24px; }
+    .preview canvas { width: auto; max-width: 100%; max-height: calc(100vh - 90px); }
   }
   h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: .2px; }
   .sub { color: var(--muted); margin: 0 0 22px; }
@@ -86,7 +87,7 @@
   .hint-ios svg { width: 15px; height: 15px; vertical-align: -2px; color: var(--text); }
   .hint-ios b { color: var(--text); }
   .preview canvas {
-    width: 100%; height: auto; display: block; border-radius: 12px;
+    width: 100%; height: auto; display: block; border-radius: 12px; margin: 0 auto;
     box-shadow: 0 20px 60px rgba(0,0,0,.55); background: #000;
   }
   .preview p { color: var(--muted); font-size: 13px; text-align: center; margin: 10px 0 0; }
@@ -146,16 +147,16 @@
 <script src="assets/jspdf.umd.min.js"></script>
 <script>
 (() => {
-  // All positions are in the template's own pixel space (905 × 1280).
+  // All positions are in the template's own pixel space (1792 × 2400).
   // A higher-resolution template with the same proportions can replace assets/template.jpg as-is.
   const L = {
-    w: 905, h: 1280,
-    guest: { cx: 452.5, baseline: 813, cap: 38, maxW: 430 },   // centred under "Dear"
-    host:  { x: 373, baseline: 1172, cap: 17, maxW: 165 },     // left-aligned, right of the photo
-    photo: { cx: 349.5, cy: 1161.5, r: 15.9, ring: 16.4 },     // covers the white circle
+    w: 1792, h: 2400,
+    guest: { cx: 896, baseline: 1514, cap: 71, maxW: 795 },           // centred under "Dear"
+    host:  { x: 749, baseline: 2196, cap: 32, maxW: 310 },            // left-aligned, right of the photo
+    photo: { cx: 705, cy: 2176, r: 30.2, ring: 31, ringW: 2.2 },      // covers the white circle
   };
   const FONT = '"Cairo", system-ui, sans-serif';
-  const EXPORT_SCALE = 2.5;   // 2263 × 3200 px, matches the 1414 × 2000 template comfortably
+  const EXPORT_SCALE = 1.15;  // 2061 × 2760 px: sharper than the template, still light on phones
   const PHOTO_PX = 400;       // the uploaded photo is cropped and shrunk once to this square
   const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -214,7 +215,7 @@
     ctx.restore();
     ctx.beginPath();
     ctx.arc(cx, cy, ring, 0, Math.PI * 2);
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = L.photo.ringW;
     ctx.strokeStyle = 'rgba(176,188,206,0.95)';
     ctx.stroke();
   }
@@ -236,7 +237,7 @@
   // Preview only needs to be as sharp as the screen shows it; keeps phone memory low.
   function previewScale() {
     const px = (preview.clientWidth || 450) * (window.devicePixelRatio || 1);
-    return Math.max(1, Math.min(2, px / L.w));
+    return Math.max(0.5, Math.min(1.5, px / L.w));
   }
 
   async function ensureFonts() {
