@@ -316,7 +316,21 @@
   }
 
   guestIn.addEventListener('input', () => onEdit('guest-err'));
-  hostIn.addEventListener('input', () => onEdit('host-err'));
+  // The host's name and photo are remembered on this phone, so the next visit only needs the guest name.
+  const SAVED = { name: 'roadshow.hostName', photo: 'roadshow.hostPhoto' };
+  const saved = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage full or blocked: just don't remember */ } },
+  };
+
+  function showPhoto(img, dataUrl) {
+    photo = img;
+    $('thumb').style.backgroundImage = `url("${dataUrl}")`;
+    $('thumb').innerHTML = '';
+    $('photo-hint').textContent = 'Change photo';
+  }
+
+  hostIn.addEventListener('input', () => { saved.set(SAVED.name, hostIn.value); onEdit('host-err'); });
 
   photoIn.addEventListener('change', async () => {
     const f = photoIn.files && photoIn.files[0];
@@ -334,10 +348,9 @@
       const cx = c.getContext('2d');
       cx.imageSmoothingQuality = 'high';
       cx.drawImage(img, sx, sy, s, s, 0, 0, c.width, c.height);
-      photo = c;
-      $('thumb').style.backgroundImage = `url("${c.toDataURL('image/jpeg', 0.85)}")`;
-      $('thumb').innerHTML = '';
-      $('photo-hint').textContent = 'Change photo';
+      const dataUrl = c.toDataURL('image/jpeg', 0.85);
+      showPhoto(c, dataUrl);
+      saved.set(SAVED.photo, dataUrl);
       onEdit('photo-err');
     } catch (e) {
       setErr('photo-err', "This photo couldn't be opened, please try another one");
@@ -403,6 +416,12 @@
     makeBtn.textContent = 'Create invitation';
     refresh();
   });
+
+  // Bring back what this phone saved last time.
+  const savedName = saved.get(SAVED.name);
+  if (savedName) hostIn.value = savedName;
+  const savedPhoto = saved.get(SAVED.photo);
+  if (savedPhoto) loadImage(savedPhoto).then((img) => { showPhoto(img, savedPhoto); refresh(); }).catch(() => {});
 
   loadImage('assets/template.jpg').then((img) => { template = img; refresh(); });
 })();
