@@ -16,6 +16,15 @@
   @font-face { font-family: "Source Serif 4"; font-weight: 700; font-display: swap;
     src: url(assets/source-serif-4-latin-ext-700-normal.woff2) format("woff2");
     unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+  @font-face { font-family: "Source Serif 4"; font-style: italic; font-weight: 400; font-display: swap;
+    src: url(assets/source-serif-4-latin-400-italic.woff2) format("woff2");
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face { font-family: "Source Serif 4"; font-style: italic; font-weight: 400; font-display: swap;
+    src: url(assets/source-serif-4-latin-ext-400-italic.woff2) format("woff2");
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+  @font-face { font-family: "Noto Naskh Arabic"; font-weight: 400; font-display: swap;
+    src: url(assets/noto-naskh-arabic-arabic-400-normal.woff2) format("woff2");
+    unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC; }
   @font-face { font-family: "Noto Naskh Arabic"; font-weight: 700; font-display: swap;
     src: url(assets/noto-naskh-arabic-arabic-700-normal.woff2) format("woff2");
     unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC; }
@@ -52,6 +61,7 @@
   form { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
   .field { margin-bottom: 18px; }
   .lbl { display: block; font-weight: 600; margin-bottom: 6px; }
+  .lbl .opt { color: var(--muted); font-weight: 400; }
   .days { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .day { position: relative; }
   .day input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
@@ -110,6 +120,11 @@
     <p class="sub">Fill in the details and download your invitation as a PDF.</p>
 
     <form id="form" novalidate>
+      <div class="field">
+        <label class="lbl" for="greeting">Greeting <span class="opt">(optional)</span></label>
+        <input id="greeting" type="text" autocomplete="off" maxlength="24" placeholder="Dear">
+      </div>
+
       <div class="field">
         <label class="lbl" for="guest">Guest name</label>
         <input id="guest" type="text" autocomplete="off" maxlength="40" placeholder="Name">
@@ -172,6 +187,7 @@
   const DESIGNS = {
     sat: {  // blue, "Saturday 21"
       src: 'assets/invite-sat.jpg', w: 1493, h: 2000,
+      dear:   { box: [659, 1164, 833, 1230], cx: 746, baseline: 1219, cap: 46, maxW: 210 },  // the word "Dear"
       guest:  { cx: 747, baseline: 1301, cap: 56, maxW: 900 },     // centred on the line under "Dear"
       host:   { x: 652, baseline: 1828, cap: 51, maxW: 650 },      // between the two short lines
       photo:  { cx: 472, cy: 1806.5, r: 143 },                     // 1.5x the white circle, still covers it
@@ -179,6 +195,7 @@
     },
     sun: {  // red, "Sunday 22"
       src: 'assets/invite-sun.jpg', w: 1493, h: 2000,
+      dear:   { box: [697, 1155, 873, 1221], cx: 785, baseline: 1210, cap: 46, maxW: 214 },
       guest:  { cx: 785, baseline: 1294.5, cap: 56, maxW: 930 },
       host:   { x: 661, baseline: 1820, cap: 51, maxW: 650 },
       photo:  { cx: 481, cy: 1798.5, r: 141.75 },
@@ -186,6 +203,7 @@
     },
     both: {  // blue, "21–22" for guests who haven't picked a day
       src: 'assets/invite-both.jpg', w: 1621, h: 2000,
+      dear:   { box: [719, 1157, 900, 1225], cx: 809.5, baseline: 1214, cap: 46, maxW: 220 },
       guest:  { cx: 809.5, baseline: 1297.5, cap: 56, maxW: 950 },
       host:   { x: 683, baseline: 1829, cap: 51, maxW: 650 },
       photo:  { cx: 501, cy: 1807.5, r: 140.25 },
@@ -199,6 +217,7 @@
                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   const $ = (id) => document.getElementById(id);
+  const greetIn = $('greeting');
   const guestIn = $('guest'), hostIn = $('host'), photoIn = $('photo');
   const preview = $('preview'), makeBtn = $('make');
   const readyEl = $('ready'), shareBtn = $('share'), downloadBtn = $('download'), anotherBtn = $('another');
@@ -206,6 +225,7 @@
   const dayInputs = [...document.querySelectorAll('input[name="day"]')];
 
   const templates = {};          // design key -> loaded image
+  const erased = {};             // design key -> same design with the word "Dear" painted out
   let photo = null, ready = null, busy = false, shownNumber = '';
 
   const chosenDay = () => (dayInputs.find((i) => i.checked) || {}).value || '';
@@ -245,6 +265,73 @@
     ctx.restore();
   }
 
+  // Custom greeting ("Mr.", "Mrs.", "السيد"...) in place of "Dear"; empty or "Dear" keeps the design as is.
+  const greeting = () => {
+    const g = greetIn.value.trim();
+    return /^dear$/i.test(g) ? '' : g;
+  };
+
+  // Paint "Dear" out of a design by filling its box from the surrounding background (a Coons patch:
+  // blends the four edges, so the fill meets the gradient around it without a visible seam).
+  function eraseDear(key) {
+    if (erased[key]) return erased[key];
+    const img = templates[key], D = DESIGNS[key];
+    if (!img) return null;
+    const c = document.createElement('canvas');
+    c.width = D.w; c.height = D.h;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, D.w, D.h);
+    const [x0, y0, x1, y1] = D.dear.box, B = 3;                 // B: border band averaged against JPEG noise
+    const X = x0 - B, Y = y0 - B, w = x1 - x0 + 1 + 2 * B, h = y1 - y0 + 1 + 2 * B;
+    const im = ctx.getImageData(X, Y, w, h), d = im.data;
+    const at = (x, y, k) => d[(y * w + x) * 4 + k];
+    const band = (fx, fy, n, k) => { let t = 0; for (let i = 0; i < n; i++) t += at(fx(i), fy(i), k); return t / n; };
+    const top = [], bot = [], left = [], right = [];
+    for (let x = 0; x < w; x++) for (let k = 0; k < 3; k++) {
+      (top[x] = top[x] || [])[k] = band(() => x, (i) => i, B, k);
+      (bot[x] = bot[x] || [])[k] = band(() => x, (i) => h - 1 - i, B, k);
+    }
+    for (let y = 0; y < h; y++) for (let k = 0; k < 3; k++) {
+      (left[y] = left[y] || [])[k] = band((i) => i, () => y, B, k);
+      (right[y] = right[y] || [])[k] = band((i) => w - 1 - i, () => y, B, k);
+    }
+    const ty = (B - 1) / 2, by = h - 1 - ty, lx = ty, rx = w - 1 - ty;
+    for (let y = B; y < h - B; y++) {
+      const v = (y - ty) / (by - ty);
+      for (let x = B; x < w - B; x++) {
+        const u = (x - lx) / (rx - lx);
+        for (let k = 0; k < 3; k++) {
+          const vert = top[x][k] * (1 - v) + bot[x][k] * v;
+          const horiz = left[y][k] * (1 - u) + right[y][k] * u;
+          const corners = (1 - u) * (1 - v) * top[0][k] + u * (1 - v) * top[w - 1][k]
+                        + (1 - u) * v * bot[0][k] + u * v * bot[w - 1][k];
+          d[(y * w + x) * 4 + k] = vert + horiz - corners + (Math.random() - 0.5) * 1.5;  // light dither, no banding
+        }
+      }
+    }
+    ctx.putImageData(im, X, Y);
+    return (erased[key] = c);
+  }
+
+  function drawGreeting(ctx, text, spec) {
+    if (!text) return;
+    const style = isRTL(text) ? '400' : 'italic 400';    // Arabic has no italic; keep it upright
+    ctx.save();
+    ctx.direction = isRTL(text) ? 'rtl' : 'ltr';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#f4f7fb';
+    ctx.font = `italic 400 100px ${FONT}`;
+    const capH = ctx.measureText('H').actualBoundingBoxAscent || 66;
+    let size = spec.cap * 100 / capH;
+    ctx.font = `${style} ${size}px ${FONT}`;
+    const w = ctx.measureText(text).width;
+    if (w > spec.maxW) size *= spec.maxW / w;
+    ctx.font = `${style} ${size}px ${FONT}`;
+    ctx.fillText(text, spec.cx, spec.baseline);
+    ctx.restore();
+  }
+
   function drawPhoto(ctx, spec) {
     if (!photo) return;
     const { cx, cy, r } = spec;
@@ -280,9 +367,11 @@
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    const tpl = templates[chosenDay() || 'both'];
+    const key = chosenDay() || 'both', greet = greeting();
+    const tpl = greet ? eraseDear(key) : templates[key];
     if (tpl) ctx.drawImage(tpl, 0, 0, D.w, D.h);
     else { ctx.fillStyle = '#0a1d3f'; ctx.fillRect(0, 0, D.w, D.h); }
+    if (greet) drawGreeting(ctx, greet, D.dear);
     drawText(ctx, guestIn.value.trim(), D.guest, 'center');
     drawText(ctx, hostIn.value.trim(), D.host, 'left');
     drawPhoto(ctx, D.photo);
@@ -298,7 +387,13 @@
 
   async function ensureFonts() {
     const sample = 'H No. 0123456789 ' + guestIn.value + ' ' + hostIn.value;
-    try { await document.fonts.load(`700 40px ${FONT}`, sample); } catch (e) {}
+    try {
+      await Promise.all([
+        document.fonts.load(`700 40px ${FONT}`, sample),
+        document.fonts.load(`italic 400 40px ${FONT}`, 'H ' + greetIn.value),
+        document.fonts.load(`400 40px ${FONT}`, greetIn.value || 'H'),
+      ]);
+    } catch (e) {}
   }
 
   let pending = 0;
@@ -386,6 +481,7 @@
   }
 
   guestIn.addEventListener('input', () => onEdit('guest-err'));
+  greetIn.addEventListener('input', () => onEdit('guest-err'));
   dayInputs.forEach((i) => i.addEventListener('change', () => onEdit('day-err')));
   // The host's name and photo are remembered on this phone, so the next visit only needs the guest name.
   const SAVED = { name: 'roadshow.hostName', photo: 'roadshow.hostPhoto' };
@@ -477,6 +573,7 @@
 
   anotherBtn.addEventListener('click', () => {
     guestIn.value = '';
+    greetIn.value = '';
     dayInputs.forEach((i) => { i.checked = false; });
     setErr('day-err');
     onEdit('guest-err');
