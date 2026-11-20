@@ -7,18 +7,18 @@
 <meta name="description" content="Create your personalised Road Show VIP invitation as a PDF.">
 <meta property="og:title" content="Road Show – VIP Invitation">
 <meta property="og:description" content="Create your personalised invitation and download it as a PDF.">
-<meta property="og:image" content="https://orwaaah.github.io/invitation-/assets/template.jpg">
+<meta property="og:image" content="https://orwaaah.github.io/invitation-/assets/invite-both.jpg">
 <meta property="og:type" content="website">
 <style>
-  @font-face { font-family: "Cairo"; font-weight: 700; font-display: swap;
-    src: url(assets/cairo-arabic-700-normal.woff2) format("woff2");
-    unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC; }
-  @font-face { font-family: "Cairo"; font-weight: 700; font-display: swap;
-    src: url(assets/cairo-latin-ext-700-normal.woff2) format("woff2");
-    unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-  @font-face { font-family: "Cairo"; font-weight: 700; font-display: swap;
-    src: url(assets/cairo-latin-700-normal.woff2) format("woff2");
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face { font-family: "Source Serif 4"; font-weight: 700; font-display: swap;
+    src: url(assets/source-serif-4-latin-700-normal.woff2) format("woff2");
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face { font-family: "Source Serif 4"; font-weight: 700; font-display: swap;
+    src: url(assets/source-serif-4-latin-ext-700-normal.woff2) format("woff2");
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+  @font-face { font-family: "Noto Naskh Arabic"; font-weight: 700; font-display: swap;
+    src: url(assets/noto-naskh-arabic-arabic-700-normal.woff2) format("woff2");
+    unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC; }
 
   :root {
     --bg: #020a1c;
@@ -51,7 +51,17 @@
   .sub { color: var(--muted); margin: 0 0 22px; }
   form { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
   .field { margin-bottom: 18px; }
-  label.lbl { display: block; font-weight: 600; margin-bottom: 6px; }
+  .lbl { display: block; font-weight: 600; margin-bottom: 6px; }
+  .days { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .day { position: relative; }
+  .day input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .day span {
+    display: block; height: 100%; text-align: center; padding: 10px 4px; border-radius: 10px;
+    border: 1px solid var(--line); background: #050f22; font-weight: 600; font-size: 14px; line-height: 1.3;
+  }
+  .day small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .day input:checked + span { border-color: var(--accent); background: rgba(79,182,255,.14); box-shadow: inset 0 0 0 1px var(--accent); }
+  .day input:focus-visible + span { box-shadow: 0 0 0 3px rgba(79,182,255,.35); }
   input[type=text] {
     width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line);
     background: #050f22; color: var(--text); font-size: 16px; outline: none;
@@ -107,6 +117,16 @@
       </div>
 
       <div class="field">
+        <span class="lbl" id="day-lbl">Day of visit</span>
+        <div class="days" role="radiogroup" aria-labelledby="day-lbl">
+          <label class="day"><input type="radio" name="day" value="sat"><span>Saturday<small>21 Nov</small></span></label>
+          <label class="day"><input type="radio" name="day" value="sun"><span>Sunday<small>22 Nov</small></span></label>
+          <label class="day"><input type="radio" name="day" value="both"><span>Not sure yet<small>21–22 Nov</small></span></label>
+        </div>
+        <div class="err" id="day-err"></div>
+      </div>
+
+      <div class="field">
         <label class="lbl" for="host">Your name</label>
         <input id="host" type="text" autocomplete="name" maxlength="40" placeholder="e.g. Nisren Mohmad">
         <div class="err" id="host-err"></div>
@@ -139,7 +159,7 @@
   </section>
 
   <section class="preview" aria-label="Invitation preview">
-    <canvas id="preview" width="905" height="1280"></canvas>
+    <canvas id="preview" width="1493" height="2000"></canvas>
     <p>Live preview</p>
   </section>
 </main>
@@ -147,16 +167,33 @@
 <script src="assets/jspdf.umd.min.js"></script>
 <script>
 (() => {
-  // All positions are in the template's own pixel space (1792 × 2400).
-  // A higher-resolution template with the same proportions can replace assets/template.jpg as-is.
-  const L = {
-    w: 1792, h: 2400,
-    guest: { cx: 896, baseline: 1514, cap: 71, maxW: 795 },           // centred under "Dear"
-    host:  { x: 772, baseline: 2198, cap: 36, maxW: 360 },            // left-aligned, clear of the photo
-    photo: { cx: 646, cy: 2176, r: 90, ring: 91.5, ringW: 3 },        // 3x the design's circle, still covers it
+  // One design per day choice. Positions are in each design's own pixel space.
+  // A higher-resolution export of a design with the same proportions can replace its file as-is.
+  const DESIGNS = {
+    sat: {  // blue, "Saturday 21"
+      src: 'assets/invite-sat.jpg', w: 1493, h: 2000,
+      guest:  { cx: 747, baseline: 1301, cap: 56, maxW: 900 },     // centred on the line under "Dear"
+      host:   { x: 652, baseline: 1821, cap: 34, maxW: 430 },      // between the two short lines
+      photo:  { cx: 520, cy: 1806.5, r: 95.5 },                    // covers the white circle
+      number: { x: 1438, baseline: 1950, size: 30 },               // bottom right
+    },
+    sun: {  // red, "Sunday 22"
+      src: 'assets/invite-sun.jpg', w: 1493, h: 2000,
+      guest:  { cx: 785, baseline: 1294.5, cap: 56, maxW: 930 },
+      host:   { x: 661, baseline: 1812.5, cap: 34, maxW: 400 },
+      photo:  { cx: 529.5, cy: 1798.5, r: 94.5 },
+      number: { x: 1438, baseline: 1950, size: 30 },
+    },
+    both: {  // blue, "21–22" for guests who haven't picked a day
+      src: 'assets/invite-both.jpg', w: 1621, h: 2000,
+      guest:  { cx: 809.5, baseline: 1297.5, cap: 56, maxW: 950 },
+      host:   { x: 683, baseline: 1821.5, cap: 34, maxW: 400 },
+      photo:  { cx: 549, cy: 1807.5, r: 93.5 },
+      number: { x: 1566, baseline: 1950, size: 30 },
+    },
   };
-  const FONT = '"Cairo", system-ui, sans-serif';
-  const EXPORT_SCALE = 1.15;  // 2061 × 2760 px: sharper than the template, still light on phones
+  const FONT = '"Source Serif 4", "Noto Naskh Arabic", serif';
+  const EXPORT_SCALE = 1.3;   // about 2000 × 2600 px: sharper than the designs, still light on phones
   const PHOTO_PX = 400;       // the uploaded photo is cropped and shrunk once to this square
   const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -166,8 +203,13 @@
   const preview = $('preview'), makeBtn = $('make');
   const readyEl = $('ready'), shareBtn = $('share'), downloadBtn = $('download'), anotherBtn = $('another');
   const iosHint = $('ios-hint');
+  const dayInputs = [...document.querySelectorAll('input[name="day"]')];
 
-  let template = null, photo = null, ready = null, busy = false;
+  const templates = {};          // design key -> loaded image
+  let photo = null, ready = null, busy = false, shownNumber = '';
+
+  const chosenDay = () => (dayInputs.find((i) => i.checked) || {}).value || '';
+  const design = () => DESIGNS[chosenDay() || 'both'];   // no choice yet: preview the two-day design
   const exportCanvas = document.createElement('canvas');
 
   const loadImage = (src) => new Promise((res, rej) => {
@@ -197,16 +239,15 @@
     ctx.textAlign = align;
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = '#ffffff';
-    // Arabic glyphs read larger than Latin at the same size, so tone them down a little.
-    const size = fitFont(ctx, text, spec.cap, spec.maxW) * (isRTL(text) ? 0.88 : 1);
+    const size = fitFont(ctx, text, spec.cap, spec.maxW);
     ctx.font = `700 ${size}px ${FONT}`;
     ctx.fillText(text, align === 'center' ? spec.cx : spec.x, spec.baseline);
     ctx.restore();
   }
 
-  function drawPhoto(ctx) {
+  function drawPhoto(ctx, spec) {
     if (!photo) return;
-    const { cx, cy, r, ring } = L.photo;
+    const { cx, cy, r } = spec;
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -214,34 +255,49 @@
     ctx.drawImage(photo, cx - r, cy - r, r * 2, r * 2);
     ctx.restore();
     ctx.beginPath();
-    ctx.arc(cx, cy, ring, 0, Math.PI * 2);
-    ctx.lineWidth = L.photo.ringW;
-    ctx.strokeStyle = 'rgba(176,188,206,0.95)';
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
     ctx.stroke();
   }
 
-  function render(canvas, scale) {
-    canvas.width = Math.round(L.w * scale);
-    canvas.height = Math.round(L.h * scale);
+  function drawNumber(ctx, number, spec) {
+    if (!number) return;
+    ctx.save();
+    ctx.font = `700 ${spec.size}px ${FONT}`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillText(`No. ${number}`, spec.x, spec.baseline);
+    ctx.restore();
+  }
+
+  function render(canvas, scale, number) {
+    const D = design();
+    canvas.width = Math.round(D.w * scale);
+    canvas.height = Math.round(D.h * scale);
     const ctx = canvas.getContext('2d');
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    if (template) ctx.drawImage(template, 0, 0, L.w, L.h);
-    drawText(ctx, guestIn.value.trim(), L.guest, 'center');
-    drawText(ctx, hostIn.value.trim(), L.host, 'left');
-    drawPhoto(ctx);
+    const tpl = templates[chosenDay() || 'both'];
+    if (tpl) ctx.drawImage(tpl, 0, 0, D.w, D.h);
+    else { ctx.fillStyle = '#0a1d3f'; ctx.fillRect(0, 0, D.w, D.h); }
+    drawText(ctx, guestIn.value.trim(), D.guest, 'center');
+    drawText(ctx, hostIn.value.trim(), D.host, 'left');
+    drawPhoto(ctx, D.photo);
+    drawNumber(ctx, number, D.number);
     return canvas;
   }
 
   // Preview only needs to be as sharp as the screen shows it; keeps phone memory low.
   function previewScale() {
     const px = (preview.clientWidth || 450) * (window.devicePixelRatio || 1);
-    return Math.max(0.5, Math.min(1.5, px / L.w));
+    return Math.max(0.5, Math.min(1.5, px / design().w));
   }
 
   async function ensureFonts() {
-    const sample = 'H ' + guestIn.value + ' ' + hostIn.value;
+    const sample = 'H No. 0123456789 ' + guestIn.value + ' ' + hostIn.value;
     try { await document.fonts.load(`700 40px ${FONT}`, sample); } catch (e) {}
   }
 
@@ -249,7 +305,7 @@
   async function refresh() {
     const ticket = ++pending;
     await ensureFonts();
-    if (ticket === pending) render(preview, previewScale());
+    if (ticket === pending) render(preview, previewScale(), shownNumber);
   }
 
   function setErr(id, msg) { $(id).textContent = msg || ''; }
@@ -257,31 +313,44 @@
   function validate() {
     let ok = true;
     if (!guestIn.value.trim()) { setErr('guest-err', 'Please enter the guest name'); ok = false; } else setErr('guest-err');
+    if (!chosenDay())          { setErr('day-err', 'Please choose the day'); ok = false; } else setErr('day-err');
     if (!hostIn.value.trim())  { setErr('host-err', 'Please enter your name'); ok = false; } else setErr('host-err');
     if (!photo)                { setErr('photo-err', 'Please choose your photo'); ok = false; } else setErr('photo-err');
     return ok;
   }
 
-  // A new name every time, so a download never replaces an earlier invitation.
-  function fileName() {
-    const g = guestIn.value.trim().replace(/[^A-Za-z0-9 ._-]+/g, '').trim().replace(/\s+/g, '-');
-    const stamp = Date.now().toString(36).slice(-6).toUpperCase();
-    return `RoadShow-Invitation-${g ? g + '-' : ''}${stamp}.pdf`;
+  // Invitation number: 2 letters + 5 digits, random, e.g. KT48219 (about 57 million combinations,
+  // so repeats are very rare). Letters I and O are left out so they can't be misread as 1 and 0.
+  const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  function newNumber() {
+    const r = new Uint32Array(7);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(r);
+    else for (let i = 0; i < 7; i++) r[i] = Math.floor(Math.random() * 2 ** 32);
+    let n = LETTERS[r[0] % LETTERS.length] + LETTERS[r[1] % LETTERS.length];
+    for (let i = 2; i < 7; i++) n += r[i] % 10;
+    return n;
   }
 
-  async function buildPdf() {
+  // Each invitation has its own number, so its file name never replaces an earlier invitation.
+  function fileName(number) {
+    const g = guestIn.value.trim().replace(/[^A-Za-z0-9 ._-]+/g, '').trim().replace(/\s+/g, '-');
+    return `RoadShow-Invitation-${g ? g + '-' : ''}${number}.pdf`;
+  }
+
+  async function buildPdf(number) {
     await ensureFonts();
-    render(exportCanvas, EXPORT_SCALE);
+    const D = design();
+    render(exportCanvas, EXPORT_SCALE, number);
     const jpeg = exportCanvas.toDataURL('image/jpeg', 0.92);
     exportCanvas.width = exportCanvas.height = 0;            // free the memory straight away (iOS)
     const { jsPDF } = window.jspdf;
-    const W = 595.28, H = W * L.h / L.w;                      // A4 width, design proportions
+    const W = 595.28, H = W * D.h / D.w;                      // A4 width, design proportions
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [W, H], compress: true });
     doc.addImage(jpeg, 'JPEG', 0, 0, W, H, undefined, 'FAST');
     doc.setProperties({ title: 'Road Show – VIP Invitation' });
-    const name = fileName();
+    const name = fileName(number);
     const blob = doc.output('blob');
-    return { name, blob, url: URL.createObjectURL(blob), file: new File([blob], name, { type: 'application/pdf' }) };
+    return { number, name, blob, url: URL.createObjectURL(blob), file: new File([blob], name, { type: 'application/pdf' }) };
   }
 
   // Must run inside the tap itself, so the browser treats it as the user's own download.
@@ -289,7 +358,7 @@
     if (!ready) return;
     const a = document.createElement('a');
     a.href = ready.url;
-    a.download = fileName();         // fresh name on every tap, even for the same invitation
+    a.download = ready.name;
     a.rel = 'noopener';
     if (IS_IOS) a.target = '_blank';   // if a browser ignores "download", open a new tab instead of replacing this page
     document.body.appendChild(a);
@@ -305,6 +374,7 @@
   function clearReady() {
     if (ready) URL.revokeObjectURL(ready.url);
     ready = null;
+    shownNumber = '';
     readyEl.hidden = true;
     makeBtn.hidden = false;
   }
@@ -316,6 +386,7 @@
   }
 
   guestIn.addEventListener('input', () => onEdit('guest-err'));
+  dayInputs.forEach((i) => i.addEventListener('change', () => onEdit('day-err')));
   // The host's name and photo are remembered on this phone, so the next visit only needs the guest name.
   const SAVED = { name: 'roadshow.hostName', photo: 'roadshow.hostPhoto' };
   const saved = {
@@ -367,7 +438,9 @@
     makeBtn.textContent = 'Creating…';
     try {
       clearReady();
-      ready = await buildPdf();
+      ready = await buildPdf(newNumber());
+      shownNumber = ready.number;        // the preview shows the number that is on the PDF
+      refresh();
       const canShare = canShareFile(ready.file);
       shareBtn.hidden = !canShare;
       shareBtn.textContent = IS_IOS ? 'Save / Send PDF' : 'Share PDF';
@@ -404,6 +477,8 @@
 
   anotherBtn.addEventListener('click', () => {
     guestIn.value = '';
+    dayInputs.forEach((i) => { i.checked = false; });
+    setErr('day-err');
     onEdit('guest-err');
     guestIn.scrollIntoView({ block: 'center', behavior: 'smooth' });
     guestIn.focus({ preventScroll: true });
@@ -423,7 +498,9 @@
   const savedPhoto = saved.get(SAVED.photo);
   if (savedPhoto) loadImage(savedPhoto).then((img) => { showPhoto(img, savedPhoto); refresh(); }).catch(() => {});
 
-  loadImage('assets/template.jpg').then((img) => { template = img; refresh(); });
+  Object.entries(DESIGNS).forEach(([key, D]) => {
+    loadImage(D.src).then((img) => { templates[key] = img; refresh(); }).catch(() => {});
+  });
 })();
 </script>
 </body>
